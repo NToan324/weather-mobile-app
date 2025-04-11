@@ -23,7 +23,7 @@ const DailyForecast = ({ foreCastDay }: WeatherInformationProps) => {
             return (
               <View
                 className={
-                  "w-[110px] h-[140px] flex justify-center items-center bg-white/20 px-4 rounded-3xl " +
+                  "w-[110px] h-[140px] flex justify-center items-center bg-white/10 px-4 rounded-3xl " +
                   marginStyle
                 }
                 key={index}

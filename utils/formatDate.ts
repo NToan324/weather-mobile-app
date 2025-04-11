@@ -6,3 +6,8 @@ export const formatDate = (dateTime: string) => {
 export const formatDay = (dateTime: string) => {
   return dateFormat(dateTime, "dddd");
 };
+
+export const formatFullDateTime = (dateTime: string) => {
+  const date = new Date(dateTime);
+  return dateFormat(date, "mmmm d, yyyy");
+};
