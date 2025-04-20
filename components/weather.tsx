@@ -1,6 +1,10 @@
-import { View, Text, Image } from "react-native";
+import { View, Text, Image, Animated, TouchableOpacity } from "react-native";
+import { BookmarkIcon as OutlineBookmarkIcon } from "react-native-heroicons/outline";
+import { BookmarkIcon as SolidBookmarkIcon } from "react-native-heroicons/solid";
+import { useContext } from "react";
+import { WeatherContext } from "@/context/context";
 
-interface WeatherInformationProps {
+export interface WeatherInformationProps {
   name: string;
   temperature: number;
   weather: string;
@@ -10,7 +14,14 @@ interface WeatherInformationProps {
   localtime: string;
   icon: string;
 }
-import { formatDate, formatDay, formatFullDateTime } from "@/utils/formatDate";
+import { formatDate, formatFullDateTime } from "@/utils/formatDate";
+import { useEffect, useRef, useState } from "react";
+import {
+  removeBookmarkWeather,
+  saveBookmarkWeather,
+  getBookmarkWeather,
+} from "@/storage/bookmark";
+
 const WeatherInformation = ({
   name,
   country,
@@ -21,14 +32,90 @@ const WeatherInformation = ({
   localtime,
   icon,
 }: WeatherInformationProps) => {
+  const [marked, setMarked] = useState(false);
+  const scale = useRef(new Animated.Value(1)).current;
+  const { isLoading, setIsLoading } = useContext(WeatherContext);
+
+  const handleToggle = async () => {
+    Animated.sequence([
+      Animated.timing(scale, {
+        toValue: 0.8,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scale, {
+        toValue: 1.1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scale, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    const newMarked = !marked;
+    setMarked(newMarked);
+
+    if (newMarked) {
+      await saveBookmarkWeather({
+        name,
+        temperature,
+        weather,
+        country,
+        humidity,
+        wind,
+        localtime,
+        icon,
+      });
+    } else {
+      const data = await getBookmarkWeather();
+      const filteredData = data.find(
+        (item: WeatherInformationProps) => item.name == name
+      );
+
+      if (filteredData) {
+        await removeBookmarkWeather(filteredData.name);
+      }
+    }
+    setIsLoading(!isLoading);
+  };
+
+  useEffect(() => {
+    const checkBookmarkStatus = async () => {
+      const data = await getBookmarkWeather();
+      if (data) {
+        const isBookmarked = data.some(
+          (item: WeatherInformationProps) => item.name === name
+        );
+        if (isBookmarked) {
+          setMarked(true);
+        }
+      }
+    };
+    checkBookmarkStatus();
+  }, [isLoading]);
+
   return (
     <View className="w-full flex flex-grow justify-between mt-4">
       <View className="flex flex-col items-center justify-between gap-4">
         <View className="flex w-full flex-col items-start justify-center">
-          <Text className="text-white text-2xl font-medium ">
-            {name}, &nbsp;
-            <Text className="text-white/50">{country}</Text>
-          </Text>
+          <View className="flex flex-row items-center justify-between w-full">
+            <Text className="text-white text-2xl font-medium ">
+              {name}, &nbsp;
+              <Text className="text-white/50">{country}</Text>
+            </Text>
+            <Animated.View style={{ transform: [{ scale }] }}>
+              <TouchableOpacity onPress={handleToggle}>
+                {marked ? (
+                  <SolidBookmarkIcon size={30} color="yellow" />
+                ) : (
+                  <OutlineBookmarkIcon size={30} color="white" />
+                )}
+              </TouchableOpacity>
+            </Animated.View>
+          </View>
           <Text className="text-white/50 text-sm font-bold">
             {formatFullDateTime(localtime.toString())}
           </Text>

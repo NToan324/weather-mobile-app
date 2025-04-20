@@ -63,8 +63,16 @@ class WeatherService {
     );
     return response.data;
   }
+
   async searchCity(city: string): Promise<any> {
     const response = await axios.get(searchEndpoint({ cityName: city }));
+    return response.data;
+  }
+
+  async getCity() {
+    const response = await axios.get("/api/p", {
+      baseURL: "https://provinces.open-api.vn/",
+    });
     return response.data;
   }
 }
