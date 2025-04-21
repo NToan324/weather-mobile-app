@@ -7,6 +7,7 @@ import { WeatherContext } from "@/context/context";
 export interface WeatherInformationProps {
   name: string;
   temperature: number;
+  temperature_f: number;
   weather: string;
   country: string;
   humidity: number;
@@ -31,6 +32,7 @@ const WeatherInformation = ({
   wind,
   localtime,
   icon,
+  temperature_f,
 }: WeatherInformationProps) => {
   const [marked, setMarked] = useState(false);
   const scale = useRef(new Animated.Value(1)).current;
@@ -68,6 +70,7 @@ const WeatherInformation = ({
         wind,
         localtime,
         icon,
+        temperature_f,
       });
     } else {
       const data = await getBookmarkWeather();

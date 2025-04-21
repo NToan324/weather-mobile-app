@@ -80,7 +80,7 @@ export default function SettingsScreen() {
         data={provinces}
         keyExtractor={(item) => item.code.toString()}
         ListHeaderComponent={() => (
-          <Text className="text-start text-3xl font-bold text-white mb-4">
+          <Text className="text-start text-4xl font-bold text-white mb-4">
             Choose your city
           </Text>
         )}

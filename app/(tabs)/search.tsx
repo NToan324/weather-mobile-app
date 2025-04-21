@@ -11,6 +11,7 @@ import {
   Animated,
   TouchableWithoutFeedback,
   TextInput,
+  Easing,
 } from "react-native";
 import {
   EllipsisHorizontalIcon,
@@ -18,29 +19,41 @@ import {
   MapPinIcon,
   PencilIcon,
 } from "react-native-heroicons/solid";
+import { MinusIcon } from "react-native-heroicons/outline";
 import { BlurView } from "expo-blur";
 import { debounce, floor } from "lodash";
 import weatherService, { City } from "@/services/weather";
 import { useRouter } from "expo-router";
-import { getBookmarkWeather } from "@/storage/bookmark";
+import { getBookmarkWeather, removeBookmarkWeather } from "@/storage/bookmark";
 import { WeatherInformationProps } from "@/components/weather";
 import { formatDay } from "@/utils/formatDate";
 import { useContext } from "react";
 import { WeatherContext } from "@/context/context";
 
-export default function SavedWeatherList() {
+export default function SearchPage() {
   const [isOpen, setIsOpen] = useState(false);
   const [weathers, setWeathers] = useState<Array<WeatherInformationProps>>([]);
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(-20)).current;
   const [showSearch, setShowSearch] = useState(true);
   const { setIsLoading, isLoading } = useContext(WeatherContext);
+  const [editMode, setEditMode] = useState(false);
+  const [location, setLocation] = useState<Array<City>>([]);
+  const [tempType, setTempType] = useState<string>("C");
   const router = useRouter();
 
-  const [location, setLocation] = useState<Array<City>>([]);
+  const handleDelete = async (name: string) => {
+    await removeBookmarkWeather(name);
+    setIsLoading(!isLoading);
+  };
+
+  const handleEditPress = () => {
+    setEditMode(!editMode);
+    setIsOpen(false);
+  };
 
   const handleChangedText = async (text: string) => {
-    if (text.length < 3) {
+    if (text.length < 1) {
       setLocation([]);
       return;
     }
@@ -52,7 +65,7 @@ export default function SavedWeatherList() {
     }
   };
 
-  const handleTextDebounce = useCallback(debounce(handleChangedText, 900), []);
+  const handleTextDebounce = useCallback(debounce(handleChangedText, 500), []);
 
   useEffect(() => {
     if (isOpen) {
@@ -94,15 +107,6 @@ export default function SavedWeatherList() {
     fetchBookmarkWeather();
   }, [isLoading]);
 
-  const handleSearchCity = (item: City) => {
-    if (item) {
-      router.setParams({ city: item.name });
-      setLocation([]);
-      setShowSearch(false);
-      router.replace(`/?city=${encodeURIComponent(item.name)}`);
-    }
-  };
-
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -110,13 +114,24 @@ export default function SavedWeatherList() {
       keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
     >
       <View className="flex-1 px-4 mt-16 gap-2">
-        <View className="w-full flex flex-row items-end justify-end">
-          <TouchableOpacity
-            onPress={() => setIsOpen((prev) => !prev)}
-            className="w-8 h-8 p-1 border-2 border-white rounded-full flex items-center justify-center"
-          >
-            <EllipsisHorizontalIcon size={20} color={"white"} />
-          </TouchableOpacity>
+        <View className="w-full flex flex-row items-end justify-end h-10">
+          {editMode ? (
+            <Text
+              className="text-white text-xl font-medium"
+              onPress={() => handleEditPress()}
+            >
+              Done
+            </Text>
+          ) : (
+            <TouchableOpacity
+              onPress={() => setIsOpen((prev) => !prev)}
+              className={`${
+                isOpen ? "opacity-30" : ""
+              } w-8 h-8 p-1 border-2 border-white rounded-full flex items-center justify-center`}
+            >
+              <EllipsisHorizontalIcon size={20} color={"white"} />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* Animated menu */}
@@ -142,21 +157,36 @@ export default function SavedWeatherList() {
                   tint="dark"
                   style={StyleSheet.absoluteFill}
                 />
-                <TouchableOpacity className="flex flex-row items-center justify-between p-4">
+                <TouchableOpacity
+                  className="flex flex-row items-center justify-between p-4"
+                  onPress={() => handleEditPress()}
+                >
                   <Text className="text-white text-base font-medium">
                     Edit List
                   </Text>
                   <PencilIcon color={"white"} size={16} />
                 </TouchableOpacity>
                 <View className="w-full h-[1px] bg-white/20"></View>
-                <TouchableOpacity className="flex flex-row items-center justify-between p-4">
+                <TouchableOpacity
+                  className="flex flex-row items-center justify-between p-4"
+                  onPress={() => {
+                    setTempType("C");
+                    setIsOpen(false);
+                  }}
+                >
                   <Text className="text-white text-base font-medium">
                     Celsius
                   </Text>
                   <Text className="text-white">&deg;C</Text>
                 </TouchableOpacity>
                 <View className="w-full h-[1px] bg-white/20"></View>
-                <TouchableOpacity className="flex flex-row items-center justify-between p-4">
+                <TouchableOpacity
+                  className="flex flex-row items-center justify-between p-4"
+                  onPress={() => {
+                    setTempType("F");
+                    setIsOpen(false);
+                  }}
+                >
                   <Text className="text-white text-base font-medium">
                     Fahrenheit
                   </Text>
@@ -194,7 +224,9 @@ export default function SavedWeatherList() {
                     : "";
                   return (
                     <TouchableOpacity
-                      onPress={() => handleSearchCity(item)}
+                      onPress={() => {
+                        router.replace(`/?city=${item.name}`);
+                      }}
                       key={index}
                       className={
                         "p-4 w-full h-[50px] flex flex-row items-center gap-2 " +
@@ -210,36 +242,56 @@ export default function SavedWeatherList() {
                 })}
             </View>
           </View>
+
+          {/* Weather Saved */}
           {weathers.map((item, index) => {
             const icon = "https:" + item.icon;
             return (
               <View
+                className="flex flex-row justify-between items-center gap-2"
                 key={index}
-                style={styles.card}
-                className="bg-white/20 border border-white/20"
               >
-                <View className="flex-1 justify-between">
-                  <View className="flex justify-start items-start gap-1">
-                    <Text className="text-2xl text-white">{item.name}</Text>
-                    <View className="flex flex-row items-center justify-start gap-2">
-                      <Text className="text-base text-white font-medium">
-                        {item.country}
-                      </Text>
-                      <Text className="text-sm text-white">
-                        {formatDay(item.localtime)}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text style={styles.description}>{item.weather}</Text>
-                </View>
-                <View
-                  style={{ alignItems: "flex-end", justifyContent: "center" }}
+                {editMode && (
+                  <TouchableOpacity
+                    className="w-8 h-8 p-2 flex rounded-full bg-red-600 justify-center items-center"
+                    onPress={() => handleDelete(item.name)}
+                  >
+                    <MinusIcon color={"white"} size={20} />
+                  </TouchableOpacity>
+                )}
+
+                <TouchableOpacity
+                  className={`${
+                    editMode ? "flex-1" : ""
+                  } bg-white/20 border border-white/20 rounded-2xl p-4 flex flex-row items-center justify-between`}
+                  onPress={() => {
+                    router.replace(`/?city=${item.name}`);
+                  }}
                 >
-                  <Text className="text-6xl text-white">
-                    {floor(item.temperature)}&deg;
-                  </Text>
-                  <Image source={{ uri: icon }} style={styles.icon} />
-                </View>
+                  <View className="flex-1 justify-between">
+                    <View className="flex justify-start items-start gap-1">
+                      <Text className="text-2xl text-white">{item.name}</Text>
+                      <View className="flex flex-row items-center justify-start gap-2">
+                        <Text className="text-base text-white font-medium">
+                          {item.country}
+                        </Text>
+                        <Text className="text-sm text-white">
+                          {formatDay(item.localtime)}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.description}>{item.weather}</Text>
+                  </View>
+                  <View className="flex justify-center items-end">
+                    <Text className="text-6xl text-white">
+                      {floor(
+                        tempType === "C" ? item.temperature : item.temperature_f
+                      )}
+                      &deg;
+                    </Text>
+                    <Image source={{ uri: icon }} style={styles.icon} />
+                  </View>
+                </TouchableOpacity>
               </View>
             );
           })}
@@ -252,12 +304,6 @@ export default function SavedWeatherList() {
 const styles = StyleSheet.create({
   scroll: {
     gap: 16,
-  },
-  card: {
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: "row",
-    justifyContent: "space-between",
   },
   description: {
     color: "white",

@@ -6,7 +6,7 @@ import { MapIcon } from "react-native-heroicons/outline";
 import { MagnifyingGlassIcon } from "react-native-heroicons/solid";
 import HomePage from "./index";
 import CityPage from "./city";
-import ArchivePage from "./archive";
+import SearchPage from "./search";
 
 const SwipeTabs = () => {
   const [page, setPage] = useState(0);
@@ -30,7 +30,7 @@ const SwipeTabs = () => {
         </View>
 
         <View key="2" style={styles.page}>
-          <ArchivePage />
+          <SearchPage />
         </View>
 
         <View key="3" style={styles.page}>

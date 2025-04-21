@@ -16,6 +16,7 @@ interface WeatherCondition {
 
 // Interface cho thông tin thời tiết hiện tại
 interface CurrentWeather {
+  temp_f: number;
   temp_c: number;
   feelslike_c: number;
   humidity: number;
