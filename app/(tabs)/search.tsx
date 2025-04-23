@@ -26,7 +26,7 @@ import weatherService, { City } from "@/services/weather";
 import { useRouter } from "expo-router";
 import { getBookmarkWeather, removeBookmarkWeather } from "@/storage/bookmark";
 import { WeatherInformationProps } from "@/components/weather";
-import { formatDay } from "@/utils/formatDate";
+import { formatDay } from "@/utils/index.utils";
 import { useContext } from "react";
 import { WeatherContext } from "@/context/context";
 
@@ -35,7 +35,6 @@ export default function SearchPage() {
   const [weathers, setWeathers] = useState<Array<WeatherInformationProps>>([]);
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(-20)).current;
-  const [showSearch, setShowSearch] = useState(true);
   const { setIsLoading, isLoading } = useContext(WeatherContext);
   const [editMode, setEditMode] = useState(false);
   const [location, setLocation] = useState<Array<City>>([]);
@@ -113,7 +112,11 @@ export default function SearchPage() {
       className="flex-1"
       keyboardVerticalOffset={Platform.OS === "ios" ? 20 : 0}
     >
-      <View className="flex-1 px-4 mt-16 gap-2">
+      <View
+        className={`${
+          Platform.OS === "ios" ? "mt-16" : "mt-10"
+        } flex-1 px-4 gap-2`}
+      >
         <View className="w-full flex flex-row items-end justify-end h-10">
           {editMode ? (
             <Text
@@ -149,6 +152,8 @@ export default function SearchPage() {
                   zIndex: 50,
                   opacity: opacityAnim,
                   transform: [{ translateY }],
+                  backgroundColor:
+                    Platform.OS === "ios" ? "rgba(0, 0, 0, 0.5)" : "black",
                 }}
                 pointerEvents="auto"
               >
@@ -198,51 +203,47 @@ export default function SearchPage() {
         )}
 
         {/* Weather cards */}
-        <ScrollView contentContainerStyle={styles.scroll}>
-          <Text className="text-4xl font-bold text-white">Weather</Text>
-          <View>
-            <View className="w-full flex flex-row items-center justify-end gap-2 px-4 rounded-3xl h-[50px] border-[0.2px] bg-white/20 border-white/45 transition-all duration-500 ease-in-out">
-              <TextInput
-                onChangeText={handleTextDebounce}
-                placeholder="Search city"
-                placeholderTextColor="white"
-                className="flex-1 text-white"
-              />
-              <TouchableOpacity
-                className="w-10 h-10 p-2 flex justify-center items-center"
-                onPress={() => setShowSearch((prev) => !prev)}
-              >
-                <MagnifyingGlassIcon color="white" size={25} />
-              </TouchableOpacity>
-            </View>
-            <View className="absolute w-full top-16 bg-white rounded-2xl z-50 transition-all duration-500 ease-in-out">
-              {location.length > 0 &&
-                location.map((item, index) => {
-                  const showBorder = index !== location.length - 1;
-                  const borderStyle = showBorder
-                    ? "border-b border-b-gray-400"
-                    : "";
-                  return (
-                    <TouchableOpacity
-                      onPress={() => {
-                        router.replace(`/?city=${item.name}`);
-                      }}
-                      key={index}
-                      className={
-                        "p-4 w-full h-[50px] flex flex-row items-center gap-2 " +
-                        borderStyle
-                      }
-                    >
-                      <MapPinIcon size={25} color="red" />
-                      <Text className="text-black">
-                        {item.name}, {item.country}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-            </View>
+        <Text className="text-4xl font-bold text-white">Weather</Text>
+        <View>
+          <View className="w-full flex flex-row items-center justify-end gap-2 px-4 rounded-3xl h-[50px] border-[0.2px] bg-white/20 border-white/45 ">
+            <TextInput
+              onChangeText={handleTextDebounce}
+              placeholder="Search city"
+              placeholderTextColor="white"
+              className="flex-1 text-white"
+            />
+            <TouchableOpacity className="w-10 h-10 p-2 flex justify-center items-center">
+              <MagnifyingGlassIcon color="white" size={25} />
+            </TouchableOpacity>
           </View>
-
+          <View className="absolute w-full top-16 bg-white rounded-2xl z-50">
+            {location.length > 0 &&
+              location.map((item, index) => {
+                const showBorder = index !== location.length - 1;
+                const borderStyle = showBorder
+                  ? "border-b border-b-gray-400"
+                  : "";
+                return (
+                  <TouchableOpacity
+                    onPress={() => {
+                      router.replace(`/?city=${item.name}`);
+                    }}
+                    key={index}
+                    className={
+                      "p-4 w-full h-[50px] flex flex-row items-center gap-2 " +
+                      borderStyle
+                    }
+                  >
+                    <MapPinIcon size={25} color="red" />
+                    <Text className="text-black">
+                      {item.name}, {item.country}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+          </View>
+        </View>
+        <ScrollView contentContainerStyle={styles.scroll} className="mt-2">
           {/* Weather Saved */}
           {weathers.map((item, index) => {
             const icon = "https:" + item.icon;

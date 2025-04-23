@@ -4,6 +4,7 @@ import {
   FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import { useEffect, useState } from "react";
 import weatherService from "@/services/weather";
@@ -75,7 +76,11 @@ export default function SettingsScreen() {
   }
 
   return (
-    <View className="flex-1 px-4 mt-24">
+    <View
+      className={`${
+        Platform.OS === "ios" ? "mt-16" : "mt-14"
+      } flex-1 px-4 mt-24`}
+    >
       <FlatList
         data={provinces}
         keyExtractor={(item) => item.code.toString()}

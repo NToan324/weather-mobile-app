@@ -15,7 +15,12 @@ export interface WeatherInformationProps {
   localtime: string;
   icon: string;
 }
-import { formatDate, formatFullDateTime } from "@/utils/formatDate";
+import {
+  extractCodeFromNightIcon,
+  formatDate,
+  formatFullDateTime,
+  imageWeather,
+} from "@/utils/index.utils";
 import { useEffect, useRef, useState } from "react";
 import {
   removeBookmarkWeather,
@@ -124,8 +129,7 @@ const WeatherInformation = ({
           </Text>
         </View>
         <Image
-          source={require("@/assets/images/heavyrain.png")}
-          // source={{ uri: "https:" + icon }}
+          source={imageWeather[extractCodeFromNightIcon(icon) ?? "default"]}
           className="object-cover w-52 h-52"
         />
         <View className="flex flex-col items-center justify-center">

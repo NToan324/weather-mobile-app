@@ -109,7 +109,9 @@ const WeatherHome = () => {
       ) : (
         <ScrollView
           decelerationRate="fast"
-          className={`py-16 relative flex-grow`}
+          className={`${
+            Platform.OS === "ios" ? "mt-16" : "mt-10"
+          } relative flex-grow`}
         >
           <SafeAreaView>
             <View className="flex-1 gap-4 px-8">

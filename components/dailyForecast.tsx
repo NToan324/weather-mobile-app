@@ -1,5 +1,5 @@
 import { forecastday } from "@/services/weather";
-import { formatDay } from "@/utils/formatDate";
+import { formatDay } from "@/utils/index.utils";
 import React from "react";
 import { View, Text, ScrollView, Image } from "react-native";
 import { CalendarDaysIcon } from "react-native-heroicons/solid";
