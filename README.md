@@ -1,5 +1,4 @@
-Dựa trên file bạn gửi, mình sẽ viết lại cho bạn một file `README.md` đúng yêu cầu:  
-**(Hướng dẫn thiết lập môi trường và khởi chạy chương trình React Native - Expo)**
+Dưới đây mình đã bổ sung thêm yêu cầu về **file `.env`** và tên thư mục gốc là `weather-mobile-app`, đồng thời chỉnh lại phần hướng dẫn cho đúng nhé:
 
 ---
 
@@ -21,6 +20,7 @@ Trước khi bắt đầu, hãy đảm bảo bạn đã cài đặt:
 
 ```bash
 git clone https://github.com/NToan324/weather-mobile-app.git
+cd weather-mobile-app
 ```
 
 ### 2. Cài đặt thư viện
@@ -29,17 +29,27 @@ git clone https://github.com/NToan324/weather-mobile-app.git
 npm install
 ```
 
-### 3. Khởi chạy ứng dụng
+### 3. Tạo file `.env`
+
+Tạo một file `.env` ở thư mục gốc (`weather-mobile-app/`) với nội dung như sau:
+
+```env
+WEATHER_API_KEY=your_openweather_api_key
+```
+
+> **Ghi chú:** Bạn cần đăng ký tài khoản tại [OpenWeatherMap](https://openweathermap.org/api) để lấy API key và điền vào.
+
+### 4. Khởi chạy ứng dụng
 
 ```bash
 npx expo start
 ```
 
-Lệnh này sẽ mở một tab mới trên trình duyệt. Tại đây bạn có thể:
+Sau đó, trình duyệt sẽ tự động mở một giao diện điều khiển, bạn có thể:
 
 - Quét mã QR bằng ứng dụng **Expo Go** trên điện thoại để chạy app.
 - Chạy ứng dụng trên **Android emulator** hoặc **iOS simulator**.
-- Chạy app dưới dạng **web app** (dành cho môi trường phát triển).
+- Chạy app dạng **web app** trong môi trường phát triển.
 
 ---
 
@@ -51,7 +61,23 @@ Lệnh này sẽ mở một tab mới trên trình duyệt. Tại đây bạn c�
   npm run reset-project
   ```
 
-  Lệnh này sẽ di chuyển mã nguồn mẫu tạo thư mục `app/` mới cho bạn bắt đầu phát triển.
+  Lệnh này sẽ di chuyển mã nguồn mẫu sang thư mục `app-example/` và tạo thư mục `app/` mới để bạn bắt đầu phát triển.
+
+---
+
+## Cấu trúc thư mục chính
+
+```bash
+weather-mobile-app/
+├── app/
+├── assets/
+├── components/
+├── services/
+├── .env
+├── app.json
+├── package.json
+└── README.md
+```
 
 ---
 
