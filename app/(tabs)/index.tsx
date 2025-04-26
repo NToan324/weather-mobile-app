@@ -4,7 +4,8 @@ import {
   ScrollView,
   ImageBackground,
   Platform,
-  KeyboardAvoidingView,
+  Text,
+  RefreshControl,
 } from "react-native";
 import WeatherInformation, {
   WeatherInformationProps,
@@ -14,76 +15,96 @@ import weatherService, { WeatherData } from "@/services/weather";
 import DailyForecast from "@/components/dailyForecast";
 import * as Progress from "react-native-progress";
 import { getCachedWeather, saveWeatherToCache } from "@/storage/caching";
-import NetInfo from "@react-native-community/netinfo";
-import { router, useLocalSearchParams } from "expo-router";
+import NetInfo, { refresh } from "@react-native-community/netinfo";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import * as Location from "expo-location";
-import BouncingArrows from "@/components/ui/bouncingArrow";
 import { getBookmarkWeather } from "@/storage/bookmark";
 
 const WeatherHome = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [weatherData, setWeatherData] = useState<WeatherData>();
-  const [location, setLocation] = useState<string>("Can Tho");
+  const [location, setLocation] = useState<string>("Ho Chi Minh");
   const { city } = useLocalSearchParams();
   const [bookmarkWeather, setBookmarkWeather] = useState<
     Array<WeatherInformationProps>
   >([]);
+  const [error, setError] = useState<string>("");
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    const fetchWeatherData = async (cityName: string) => {
+    const useLocation = async () => {
       try {
-        setIsLoading(true);
-
-        const netState = await NetInfo.fetch();
-
-        if (!netState.isConnected) {
-          const cached = await getCachedWeather();
-          if (cached) {
-            setWeatherData(cached);
-            return;
-          } else {
-            alert("Không có mạng và không có dữ liệu được lưu.");
-            return;
-          }
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          return;
         }
 
-        const data = await weatherService.getWeatherByCity(cityName, 7);
-        setWeatherData(data);
-        await saveWeatherToCache(data);
+        const loc = await Location.getCurrentPositionAsync({});
+
+        const placemarks = await Location.reverseGeocodeAsync({
+          latitude: loc.coords.latitude,
+          longitude: loc.coords.longitude,
+        });
+
+        if (placemarks.length > 0) {
+          const cityName =
+            placemarks[0].city ||
+            placemarks[0].region ||
+            placemarks[0].subregion ||
+            "Ho Chi Minh";
+          setLocation(cityName);
+        } else {
+          setLocation("Ho Chi Minh");
+        }
       } catch (error) {
-        console.error(error);
-      } finally {
-        setIsLoading(false);
+        setLocation("Ho Chi Minh");
       }
     };
+    useLocation();
 
     const updateWeatherWithTime = setInterval(() => {
       fetchWeatherData(city?.toString() || location);
-    }, 60 * 1000);
+    }, 120 * 1000);
+
     fetchWeatherData(city?.toString() || location);
     return () => {
       clearInterval(updateWeatherWithTime);
     };
-  }, [city]);
+  }, [city, location]);
 
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.warn("Permission to access location was denied");
-        return;
+  const fetchWeatherData = async (cityName: string) => {
+    try {
+      setIsLoading(true);
+      const netState = await NetInfo.fetch();
+      if (!netState.isConnected) {
+        const cached = await getCachedWeather();
+        if (cached) {
+          setWeatherData(cached);
+          return;
+        } else {
+          setError("Please check your network connection.");
+          return;
+        }
       }
+      const data = await weatherService.getWeatherByCity(cityName, 7);
+      setWeatherData(data);
+      await saveWeatherToCache(data);
+    } catch (error) {
+      setError("Please check your network connection.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      let location = await Location.getCurrentPositionAsync({});
-      const placemarks = await Location.reverseGeocodeAsync({
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      });
-      if (placemarks.length > 0) {
-        setLocation(placemarks[0].city || "Can Tho");
-      }
-    })();
-  }, []);
+  const onRefresh = async () => {
+    try {
+      setRefreshing(true);
+      await fetchWeatherData(city?.toString() || location);
+    } catch (err) {
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     const fetchBookmarkWeather = async () => {
@@ -94,6 +115,14 @@ const WeatherHome = () => {
     };
     fetchBookmarkWeather();
   }, []);
+
+  if (error && error !== "") {
+    return (
+      <View className="flex-1 items-center justify-center">
+        <Text className="text-white">{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <ImageBackground
@@ -108,13 +137,16 @@ const WeatherHome = () => {
         </View>
       ) : (
         <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
           decelerationRate="fast"
           className={`${
             Platform.OS === "ios" ? "mt-16" : "mt-10"
           } relative flex-grow`}
         >
           <SafeAreaView>
-            <View className="flex-1 gap-4 px-8">
+            <View className="flex-1 gap-4 px-4">
               {weatherData && (
                 <>
                   <WeatherInformation

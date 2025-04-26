@@ -1,50 +1,71 @@
-# Welcome to your Expo app 👋
+Dựa trên file bạn gửi, mình sẽ viết lại cho bạn một file `README.md` đúng yêu cầu:  
+**(Hướng dẫn thiết lập môi trường và khởi chạy chương trình React Native - Expo)**
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+---
 
-## Get started
+# Ứng dụng Thời tiết - React Native (Expo)
 
-1. Install dependencies
+Đây là dự án React Native được khởi tạo bằng [Expo](https://expo.dev) với [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-   ```bash
-   npm install
-   ```
+## Yêu cầu môi trường
 
-2. Start the app
+Trước khi bắt đầu, hãy đảm bảo bạn đã cài đặt:
 
-   ```bash
-    npx expo start
-   ```
+- [Node.js](https://nodejs.org/) (Phiên bản khuyến nghị: >= 18.x)
+- [Expo CLI](https://docs.expo.dev/get-started/installation/) (cài bằng lệnh `npm install -g expo-cli`)
+- Trình giả lập Android (Android Studio) hoặc thiết bị thật có cài ứng dụng **Expo Go**
 
-In the output, you'll find options to open the app in a
+## Các bước thiết lập
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+### 1. Tải mã nguồn về máy
 
 ```bash
-npm run reset-project
+git clone https://github.com/NToan324/weather-mobile-app.git
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### 2. Cài đặt thư viện
 
-## Learn more
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### 3. Khởi chạy ứng dụng
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npx expo start
+```
 
-## Join the community
+Lệnh này sẽ mở một tab mới trên trình duyệt. Tại đây bạn có thể:
 
-Join our community of developers creating universal apps.
+- Quét mã QR bằng ứng dụng **Expo Go** trên điện thoại để chạy app.
+- Chạy ứng dụng trên **Android emulator** hoặc **iOS simulator**.
+- Chạy app dưới dạng **web app** (dành cho môi trường phát triển).
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+
+## Một số lệnh hữu ích
+
+- **Reset project về trạng thái mới:**
+
+  ```bash
+  npm run reset-project
+  ```
+
+  Lệnh này sẽ di chuyển mã nguồn mẫu tạo thư mục `app/` mới cho bạn bắt đầu phát triển.
+
+---
+
+## Tài liệu tham khảo
+
+- [Tài liệu chính thức Expo](https://docs.expo.dev/)
+- [Hướng dẫn phát triển Expo](https://docs.expo.dev/develop/)
+- [Hướng dẫn sử dụng Expo Router](https://docs.expo.dev/router/introduction/)
+
+---
+
+## Cộng đồng hỗ trợ
+
+- [Expo trên GitHub](https://github.com/expo/expo)
+- [Cộng đồng Discord Expo](https://chat.expo.dev)
+
+---

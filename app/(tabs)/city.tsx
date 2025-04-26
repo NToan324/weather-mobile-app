@@ -1,14 +1,8 @@
-import {
-  View,
-  Text,
-  FlatList,
-  ActivityIndicator,
-  TouchableOpacity,
-  Platform,
-} from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Platform } from "react-native";
 import { useEffect, useState } from "react";
 import weatherService from "@/services/weather";
 import { useRouter } from "expo-router";
+import * as Progress from "react-native-progress";
 
 <svg
   xmlns="http://www.w3.org/2000/svg"
@@ -30,6 +24,7 @@ export default function SettingsScreen() {
     []
   );
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>("");
   const router = useRouter();
 
   useEffect(() => {
@@ -39,7 +34,7 @@ export default function SettingsScreen() {
         const response = await weatherService.getCity();
         setProvinces(response);
       } catch (error) {
-        console.error("Error fetching provinces:", error);
+        setError("Please check your network connection.");
       }
       setLoading(false);
     };
@@ -69,8 +64,8 @@ export default function SettingsScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center">
-        <ActivityIndicator size="large" color="#fff" />
+      <View className="w-full h-screen flex justify-center items-center bg-black/40 z-50">
+        <Progress.CircleSnail color="white" size={50} />
       </View>
     );
   }
@@ -78,26 +73,32 @@ export default function SettingsScreen() {
   return (
     <View
       className={`${
-        Platform.OS === "ios" ? "mt-16" : "mt-14"
+        Platform.OS === "ios" ? "mt-16" : "mt-10"
       } flex-1 px-4 mt-24`}
     >
-      <FlatList
-        data={provinces}
-        keyExtractor={(item) => item.code.toString()}
-        ListHeaderComponent={() => (
-          <Text className="text-start text-4xl font-bold text-white mb-4">
-            Choose your city
-          </Text>
-        )}
-        renderItem={({ item }) => (
-          <TouchableOpacity
-            className="bg-white/10 rounded-2xl mb-4 p-2 border border-white/20"
-            onPress={() => handleCitySelect(item)}
-          >
-            <Text className="text-base py-2  text-white">{item.name}</Text>
-          </TouchableOpacity>
-        )}
-      />
+      {error && error !== "" ? (
+        <View className="flex-1 items-center justify-center">
+          <Text className="text-white">{error}</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={provinces}
+          keyExtractor={(item) => item.code.toString()}
+          ListHeaderComponent={() => (
+            <Text className="text-start text-4xl font-bold text-white mb-4">
+              Choose your city
+            </Text>
+          )}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              className="bg-white/10 rounded-2xl mb-4 p-2 border border-white/20"
+              onPress={() => handleCitySelect(item)}
+            >
+              <Text className="text-base py-2  text-white">{item.name}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      )}
     </View>
   );
 }

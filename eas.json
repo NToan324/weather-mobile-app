@@ -3,6 +3,9 @@
     "preview": {
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_KEY": "dfab8e21c2b5451f94665239252603"
       }
     },
     "preview2": {
